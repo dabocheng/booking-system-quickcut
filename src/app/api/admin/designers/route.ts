@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
 
 export async function GET() {
-  const designers = await prisma.designer.findMany();
-  return NextResponse.json(designers);
-}
+  // 這一步將會把伺服器所有的環境變數都打印到日誌中
+  console.log("--- START: All Environment Variables ---");
+  console.log(process.env);
+  console.log("--- END: All Environment Variables ---");
 
-// 新增一位設計師
-export async function POST(request: Request) {
-  const { name } = await request.json();
-  if (!name) {
-    return NextResponse.json({ error: '必須提供姓名' }, { status: 400 });
-  }
-  const newDesigner = await prisma.designer.create({
-    data: { name },
+  // 我們可以直接從這裡檢查 DATABASE_URL 和 NEXTAUTH_SECRET
+  console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("NEXTAUTH_SECRET exists:", !!process.env.NEXTAUTH_SECRET);
+  
+  // 回傳一個簡單的訊息，告訴我們診斷已執行
+  return NextResponse.json({ 
+    message: "Diagnostics executed. Please check CloudWatch logs.",
+    databaseUrlSet: !!process.env.DATABASE_URL,
+    nextAuthSecretSet: !!process.env.NEXTAUTH_SECRET
   });
-  return NextResponse.json(newDesigner, { status: 201 });
 }
