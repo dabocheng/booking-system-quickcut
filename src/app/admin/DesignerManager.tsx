@@ -58,9 +58,26 @@ export default function DesignerManager() {
     }
   };
 
-  useEffect(() => {
+  // 修正後的寫法 (將 fetchDesigners 函式移入 useEffect 內部)
+useEffect(() => {
+    const fetchDesigners = async () => {
+        try {
+            const response = await fetch('/api/admin/designers', { cache: 'no-store' });
+            if (!response.ok) throw new Error('無法獲取設計師列表');
+            const data: Designer[] = await response.json();
+            setDesigners(data);
+            if (data.length > 0 && !scheduleDesignerId) {
+                setScheduleDesignerId(data[0].id);
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     fetchDesigners();
-  }, []);
+}, [scheduleDesignerId]); // scheduleDesignerId 是一個依賴，雖然這裡可能不是必須的，但加上更嚴謹
 
   const handleAddDesigner = async (e: FormEvent) => {
     e.preventDefault();

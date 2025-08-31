@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 // 關鍵修正：直接引用我們抽出的 authOptions
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import DesignerManager from "./DesignerManager";
 import LogoutButton from "./LogoutButton";
 import SharedScheduleViewer from "./SharedScheduleViewer";
