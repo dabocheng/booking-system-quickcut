@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN     // 店家管理者
+  DESIGNER  // 設計師
+}
+
+// 新增：使用者模型，專門處理登入驗證
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique // 使用 email 當作登入帳號
+  password  String   // 儲存加密後的密碼
+  role      Role     @default(DESIGNER) // 預設角色為設計師
+  createdAt DateTime @default(now())
+
+  // 關聯：一個使用者可以是一個設計師
+  designer  Designer?
+}
+
+model Designer {
+  id           String        @id @default(cuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  
+  schedules    Schedule[]
+  appointments Appointment[]
+
+  // 新增關聯：讓 Designer 可以對應到一個 User 帳號
+  // 這是一個一對一的關聯
+  userId       String?       @unique
+  user         User?         @relation(fields: [userId], references: [id])
+}
+
+// 新增：班表模型 (用來定義設計師什麼時候可以被預約)
+// 這個模型比之前的 BlockedTimeSlot 更強大
+model Schedule {
+  id          String   @id @default(cuid())
+  startTime   DateTime // 可預約的開始時間
+  endTime     DateTime // 可預約的結束時間
+
+  // 關聯：這個班表屬於哪位設計師
+  designerId  String
+  designer    Designer @relation(fields: [designerId], references: [id])
+}
+
+// 預約紀錄
+model Appointment {
+  id            String   @id @default(cuid())
+  customerName  String
+  customerPhone String
+  startTime     DateTime
+  createdAt     DateTime @default(now())
+
+  // 關聯：這個預約是哪位設計師的
+  designerId    String
+  designer      Designer @relation(fields: [designerId], references: [id])
+}
